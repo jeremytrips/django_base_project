@@ -3,6 +3,14 @@ from django.db import models
 from inclusive_django_range_fields import InclusiveIntegerRangeField
 # Create your models here.
 
+class Settings(models.Model):
+
+    push_notification_new_relation = models.BooleanField()                  # s explique de par le nom
+    mail_notification_new_relation = models.BooleanField()
+    push_notification_new_message = models.BooleanField()
+    mail_notification_new_message = models.BooleanField()
+
+
 class CustomUser(AbstractUser):
     
     user_name = None                                            #Pas de nom d'utilisateur, on utilise adresse mail pour se connecter
@@ -27,9 +35,3 @@ class CustomUser(AbstractUser):
         return self.username
 
 
-class Settings(Models.model):
-
-    push_notification_new_relation = models.BooleanField()                  # s explique de par le nom
-    mail_notification_new_relation = models.BooleanField()
-    push_notification_new_message = models.BooleanField()
-    mail_notification_new_message = models.BooleanField()
