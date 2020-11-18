@@ -6,6 +6,11 @@ from django.db import models
 class ReportUser(models.Model):
     user_reporting = models.EmailField()
     user_reported = models.EmailField()
+    
+    fake_profile = "rep_FP"
+    inappropriate_pic = "rep_IP"
+    inappropriate_behavior = "rep_IB"
+    other = "rep_O"
     reasons_choices = [                                             # L utilisateur doit choisir parmis ces choix une raison de signalement
         (fake_profile, 'Faux profil'),
         (inappropriate_pic, 'Photo inappropriee'),
