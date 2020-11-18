@@ -1,6 +1,7 @@
 /venv/
 migrations/
 __pycache__/
+.idea/
 
 *.sqlite3
 *.pyc
