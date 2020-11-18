@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from users.other_models.settings import Settings
 
+from users.other_models.settings import Settings
 # from users.api.serializers.RegistrationSerializer import RegistrationSerializer as R
-# ser = R(data={"email": "Tedst@gmail.Com", "password": "12345de"})
+# ser = R(data={"email": "Tedfdst@gmail.Com", "password": "12345de"})
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -14,5 +14,4 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     def save(self, **kwargs):
         kwargs["settings"] = Settings.objects.create()
-        super(RegistrationSerializer, self).save(**kwargs)
-        return {}
+        return super(RegistrationSerializer, self).save(**kwargs)
