@@ -3,7 +3,17 @@ from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from inclusive_django_range_fields import InclusiveIntegerRangeField
 from .managers import CustomUserManager
-from .other_models.settings import Settings
+
+
+class Settings(models.Model):
+
+    email_verified = models.BooleanField(default=False)
+    account_is_visible = models.BooleanField(default = True)
+
+    push_notification_new_relation = models.BooleanField(default=True)
+    mail_notification_new_relation = models.BooleanField(default=True)
+    push_notification_new_message = models.BooleanField(default=True)
+    mail_notification_new_message = models.BooleanField(default=True)
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):

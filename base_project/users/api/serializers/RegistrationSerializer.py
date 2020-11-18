@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from users.other_models.settings import Settings
+from users.models import Settings
+
 # from users.api.serializers.RegistrationSerializer import RegistrationSerializer as R
 # ser = R(data={"email": "Tedfdst@gmail.Com", "password": "12345de"})
 
