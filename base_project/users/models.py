@@ -14,7 +14,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     surname = models.CharField(max_length=20, default="NoSurname")                          # nom de l etudiant(e)
     studies = models.CharField(max_length = 30, default = "NoStudies")                      # etudes de l etudiant(e)
     home_adress = models.CharField(max_length=30, default = "NoHomeAdd")                    # lieu de residence hors campus
-    birth_date = models.DateTimeField(default = "NoBirth")                                  # date de naissance de l etudiant(e)
+    birth_date = models.DateTimeField(auto_now=True, auto_created=True)                                  # date de naissance de l etudiant(e)
     description = models.CharField(max_length=250, default="")                              # description visible pour les autres utilisateurs
     age_lower_bound = models.PositiveSmallIntegerField(default=16)                          # limite inf d age pour partenaire
     age_upper_bound = models.PositiveSmallIntegerField(default=100)                         # limite sup d age pour partenaire
