@@ -18,9 +18,9 @@ class UsersManagersTests(TestCase):
         settings = Settings.objects.create()
         user = User.objects.create_user(email='normal@user.com', password='foo', settings=settings)
         self.assertEqual(user.email, 'normal@user.com')
-        self.assertTrue(user.settings.is_active)
-        self.assertFalse(user.settings.is_admin)
-        self.assertFalse(user.settings.is_staff)
+        self.assertTrue(user.is_active)
+        self.assertFalse(user.is_admin)
+        self.assertFalse(user.is_staff)
 
         try:
             # username is None for the AbstractUser option
@@ -40,8 +40,8 @@ class UsersManagersTests(TestCase):
         settings = Settings.objects.create()
         admin_user = User.objects.create_superuser('super@user.com', 'foo')
         self.assertEqual(admin_user.email, 'super@user.com')
-        self.assertTrue(admin_user.settings.is_active)
-        self.assertTrue(admin_user.settings.is_staff)
+        self.assertTrue(admin_user.is_active)
+        self.assertTrue(admin_user.is_staff)
         try:
             # username is None for the AbstractUser option
             # username does not exist for the AbstractBaseUser option

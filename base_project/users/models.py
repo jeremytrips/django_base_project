@@ -23,6 +23,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     profile_pic_three = models.ImageField(blank=True, default = "\static\no_img.png")          # troisieme image de l'utilisateur
     settings = models.OneToOneField(Settings, on_delete=models.CASCADE)
 
+    is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
