@@ -6,7 +6,7 @@ from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_201_CREATED, HTTP_20
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 
-from ..serializers.RegistrationSerializer import RegistrationSerializer
+from users.api.serializers.RegistrationSerializer import RegistrationSerializer
 
 
 class RegistrationView(APIView):
@@ -18,7 +18,7 @@ class RegistrationView(APIView):
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            token = Token.objects.create(user)
-            return Response(data={"token": token}, status=HTTP_201_CREATED)
+            token = Token.objects.create(user=user)
+            return Response(data={"token": token.key}, status=HTTP_201_CREATED)
         else:
             return Response(data=serializer.errors, status=HTTP_206_PARTIAL_CONTENT)

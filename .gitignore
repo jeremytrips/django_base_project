@@ -1,8 +1,13 @@
 /venv/
+image/
+/static/
 migrations/
 __pycache__/
 .idea/
+.vscode/
 
 /env/
 *.sqlite3
 *.pyc
+*.png
+*.jpg
