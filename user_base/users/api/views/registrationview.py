@@ -19,6 +19,6 @@ class RegistrationView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             token = Token.objects.create(user=user)
-            return Response(data={"token": token.key}, status=HTTP_201_CREATED)
+            return Response(status=HTTP_201_CREATED)
         else:
             return Response(data=serializer.errors, status=HTTP_206_PARTIAL_CONTENT)

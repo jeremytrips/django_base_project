@@ -24,11 +24,11 @@ class LoginVIew(ObtainAuthToken):
             user = serializer.validated_data['user']
             if user is None:
                 # Credentials errors
-                return Response("SERIALIZER_ERROR", HTTP_204_NO_CONTENT)
+                return Response(data="USER_DO_NOT_EXIST", status=HTTP_204_NO_CONTENT)
             if not user.settings.is_email_verified:
                 # User emil must be verified before he can connect
                 return Response("NOT_EMAIL_VERIFIED", HTTP_204_NO_CONTENT)
-            token, created = Token.objects.create(user=user)
+            token, created = Token.objects.get_or_create(user=user)
             if user.is_active:
                 # User can connect the API
                 # todo get user list and pass it in the response
