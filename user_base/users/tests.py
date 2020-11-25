@@ -31,6 +31,7 @@ Things already tested:
     - Registration view:
         - Correct data
         - Duplicated email 
+        - missing data
     - Login View:
         - not_email_verified
         - unregistered client
@@ -122,6 +123,25 @@ class UserAuthenticationView(TestCase):
         self.assertEqual(resp.data["email"][0], "custom user with this email already exists.")    
         self.assertEqual(resp.data["email"][0].code, "unique")
         self.assertEqual(resp.status_code, 206)
+
+    def test_not_correct_data_registration_view(self):
+        """
+        Test the errors throw if data are missing in the serializer.
+        """
+        data = {
+            "email": "jeremy.trips@tamere.com",
+            "password": "pdcdezgf4545freff",
+            "password2": "pdcdezgf4545freff",
+            "home_address": "Zaventem",
+            #"studies": "Ingé de ouf",
+            "first_name": "jeremy",
+            "last_name": "Trips",
+            "noma": "14122",
+            "student_card": File(open(os.path.join("static", "no_img.png"), "rb"))
+        }
+        resp = self.client.post(reverse("create"), data=data)
+        self.assertEqual(resp.status_code, 206)
+        self.assertIn("studies", resp.data.keys())
 
     def test_not_email_verified_login_view(self):
         """
