@@ -13,6 +13,7 @@ class RegistrationView(APIView):
     """
     Manage user registration
     """
+    permission_classes = [AllowAny, ]
 
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)

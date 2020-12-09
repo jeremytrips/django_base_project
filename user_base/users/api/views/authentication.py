@@ -12,6 +12,7 @@ class LoginVIew(ObtainAuthToken):
     """
     View used to create user auth token.
     """
+    permission_classes = [AllowAny, ]
 
     def post(self, request, *args, **kwargs):
         """
