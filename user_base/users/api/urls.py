@@ -19,10 +19,11 @@ from django.urls import path, include
 
 from .views.authentication import LoginVIew, LogoutView
 from .views.registrationview import RegistrationView
+from .views.deleteacountview import DeleteAccount
 
 urlpatterns = [
     path('create/', RegistrationView.as_view(), name='create'),
-    # path('delete/', Delete.as_view(), name='delete'),
+    path('delete/', DeleteAccount.as_view(), name='delete'),
     path('login/', LoginVIew.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
 ]
