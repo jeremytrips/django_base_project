@@ -1,4 +1,4 @@
-# django_base_projec
+# Base Project for Django
 
 Django project that can be use to start a rest api based project. Each functionalities that have been implemented are so using dajngo-rest-framework.
 
