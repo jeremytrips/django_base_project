@@ -47,15 +47,15 @@ You can always add or disable some in the settings.py file.
 As we have said before every functionalities has been implemented in the FESTful architecture. 
 For now user functionalities are:
 - User registration
+- User email verification
 - User deleting
 - User Login
 - user Logout
 
 ## Upcoming features
 We plan on adding more user functionalities as:
-- User inactive mode
-- User email verification
+- User inactive model
 - User settings model
 - User reporting
-- ...
+- HTML templating email verification
 

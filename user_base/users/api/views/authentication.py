@@ -6,6 +6,7 @@ from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_200_OK, HTTP_206_PAR
 from rest_framework.views import APIView
 
 from users.api.serializers.LoginSerializer import LoginSerializer
+from users.models import EmailVerificationToken
 
 
 class LoginVIew(ObtainAuthToken):
@@ -25,10 +26,10 @@ class LoginVIew(ObtainAuthToken):
             user = serializer.validated_data['user']
             if user is None:
                 # Credentials errors
-                return Response(data="USER_DO_NOT_EXIST", status=HTTP_204_NO_CONTENT)
+                return Response(data="REGISTER_FIRST", status=HTTP_204_NO_CONTENT)
             if not user.settings.is_email_verified:
                 # User emil must be verified before he can connect
-                return Response("NOT_EMAIL_VERIFIED", HTTP_204_NO_CONTENT)
+                return Response("VERIFY_EMAIL_FIRST", HTTP_204_NO_CONTENT)
             token, created = Token.objects.get_or_create(user=user)
             if user.is_active:
                 # User can connect the API

@@ -47,3 +47,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     
     def __str__(self):
         return self.email
+
+
+class EmailVerificationToken(models.Model):
+    user_owner = models.ForeignKey(CustomUser, related_name="user", on_delete=models.CASCADE)
+    token = models.CharField(max_length=6)
