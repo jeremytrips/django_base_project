@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -137,3 +138,14 @@ REST_FRAMEWORK = {
     ),
 
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "appformytest1253@gmail.com"
+EMAIL_HOST_PASSWORD = os.environ["DJANGO_MAIN_PASSWORD"]
+
+VERIFICATION_EMAIL_SUBJECT = "Test"
+# Token need to be pass in here.
+VERIFICATION_EMAIL_CONTENT = "{first_name}, {token}"
