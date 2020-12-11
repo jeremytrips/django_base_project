@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.core.files import File
+import django.core.exceptions as exceptions
 
 import rest_framework.status as status
 from rest_framework.exceptions import ErrorDetail
@@ -15,7 +16,7 @@ from rest_framework.test import APIRequestFactory
 from rest_framework.authtoken.models import Token
 
 
-from users.models import Settings
+from users.models import Settings, EmailVerificationToken
 from users.api.serializers.RegistrationSerializer import RegistrationSerializer
 from users.api.serializers.LoginSerializer import LoginSerializer
 from users.api.views.authentication import LoginVIew
@@ -161,7 +162,7 @@ class UserAuthenticationView(TestCase):
         self.client.post(reverse("create"), data=data)
         resp = self.client.post(reverse("login"), data={"email": "jeremy.trips@tamere.com", "password": 'pdcdezgf4545freff'})
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(resp.data, "NOT_EMAIL_VERIFIED")
+        self.assertEqual(resp.data, "VERIFY_EMAIL_FIRST")
     
     def test_login_view(self):
         """
@@ -194,7 +195,35 @@ class UserAuthenticationView(TestCase):
         """
         resp = self.client.post(reverse("login"), data={"email": "none@tamere.com", "password": 'pdcdezgf4545freff'})
         self.assertEqual(resp.status_code, 204)
-        self.assertEqual(resp.data, "USER_DO_NOT_EXIST")
+        self.assertEqual(resp.data, "REGISTER_FIRST")
+
+    def test_delete_user(self):
+        data = {
+            "email": "jeremy.trips@tamere.com",
+            "password": "pdcdezgf4545freff",
+            "password2": "pdcdezgf4545freff",
+            "home_address": "Zaventem",
+            "studies": "Ingé de ouf",
+            "first_name": "jeremy",
+            "last_name": "Trips",
+            "noma": "14122",
+            "student_card": File(open(os.path.join("static", "no_img.png"), "rb"))
+        }
+        resp = self.client.post(reverse("create"), data=data)
+        user = User.objects.get(email="jeremy.trips@tamere.com")
+        email_token = EmailVerificationToken.objects.get(user_owner=user)
+        self.client.post(reverse("verify_token"), data={
+            "user_email": user.email,
+            "token": email_token.token
+        })
+        resp = self.client.post(reverse("login"), data={
+            "email": "jeremy.trips@tamere.com",
+            "password": "pdcdezgf4545freff"
+        })
+        token = resp.data["token"]
+        resp = self.client.post(reverse("delete"), HTTP_AUTHORIZATION=f'Token {token}')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.data, ["DELETED"])
  
     def test_create_user(self):
         """
@@ -240,3 +269,123 @@ class UserAuthenticationView(TestCase):
         with self.assertRaises(django.db.utils.IntegrityError):
             User.objects.create_superuser(
                 email='super@user.com', password='foo', settings=settings)
+
+class MailTest(TestCase):
+
+    def create_user(self, email):
+        data = {
+            "email": email,
+            "password": "pdcdezgf4545freff",
+            "password2": "pdcdezgf4545freff",
+            "home_address": "Zaventem",
+            "studies": "Ingé de ouf",
+            "first_name": "jeremy",
+            "last_name": "Trips",
+            "noma": "14122",
+            "student_card": File(open(os.path.join("static", "no_img.png"), "rb"))
+        }
+        self.client.post(reverse("create"), data=data)
+    
+    def get_token(self, user):
+        return EmailVerificationToken.objects.get(user_owner=user)
+    
+    def test_correct_token(self):
+        """
+        Test the correct email verification token
+        """
+        email = "jeremy.trips@gmail.com"
+        self.create_user(email)
+        user = User.objects.get(email=email)
+        token = self.get_token(user)
+        self.assertIsNotNone(token)
+        resp = self.client.post(reverse("verify_token"), data={
+            "user_email": email,
+            "token": token.token
+        })
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        resp = self.client.post(reverse("login"), data={"email": email, "password": 'pdcdezgf4545freff'})
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertIn("token", resp.data.keys())
+        self.assertRegexpMatches(resp.data["token"], r"[a-z0-9]{40}")
+
+    def test_wrong_token(self):
+        """
+        Test the wrong email verification token
+        """
+        email = "test@me.com"
+        self.create_user(email)
+        user = User.objects.get(email=email)
+        token = self.get_token(user)
+        resp = self.client.post(reverse("verify_token"), data={
+            "user_email": email,
+            "token": "256"
+        })
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(resp.data, ["TOKEN_ERROR"])
+    
+    def test_not_register(self):
+        """
+        Test not register user trying ot verify email
+        """
+        email = "bonjour@oui.com"
+        resp = self.client.post(reverse("verify_token"), data={
+            "user_email": email,
+            "token": "256"
+        })
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(resp.data, "DO_NOT_EXIST")
+
+    def test_already_verified(self):
+        """
+        Test already verified user trying to verify his email
+        """
+        email = "girafe@gogole.com"
+        self.create_user(email)
+        user = User.objects.get(email=email)
+        token = self.get_token(user)
+        self.client.post(reverse("verify_token"), data={
+            "user_email": email,
+            "token": token.token
+        })
+        with self.assertRaises(EmailVerificationToken.DoesNotExist):
+            EmailVerificationToken.objects.get(user_owner=user)
+        resp = self.client.post(reverse("verify_token"), data={
+            "user_email": email,
+            "token": token.token
+        })
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(resp.data, ["TOKEN_ERROR"])
+        resp = self.client.post(reverse("login"), data={"email": email, "password": 'pdcdezgf4545freff'})
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertIn("token", resp.data.keys())
+        self.assertRegexpMatches(resp.data["token"], r"[a-z0-9]{40}")
+
+class UserReportTest(TestCase):
+    password = "pdcdezgf4545freff"
+    
+    def createUser(self, email):
+        data = {
+            "email": email,
+            "password": self.password,
+            "password2": self.password,
+            "home_address": "Zaventem",
+            "studies": "Ingé de ouf",
+            "first_name": "jeremy",
+            "last_name": "Trips",
+            "noma": "14122",
+            "student_card": File(open(os.path.join("static", "no_img.png"), "rb"))
+        }
+        self.client.post(reverse("create"), data=data)
+    
+    def verify_email(self, user_email):
+        user = User.objects.get(email=user_email)
+        token = EmailVerificationToken.objects.get(user_owner=user)
+        self.client.post(reverse("verify_token"), data={
+            "user_email": user_email,
+            "token": token.token
+        })
+
+    def create_and_verify(self, user_email):
+        self.createUser(user_email)
+        self.verify_email(user_email)
+        return User.objects.get(email=user_email)
