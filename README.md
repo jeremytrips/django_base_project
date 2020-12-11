@@ -44,18 +44,18 @@ By default, for more security, the permission classes are:
 - IsActive
 You can always add or disable some in the settings.py file.
  
-As we have said before every functionalities has been implemented in the FESTful architecture. 
+As we have said before every functionalities has been implemented in a FESTful architecture. 
 For now user functionalities are:
 - User registration
 - User email verification
 - User deleting
 - User Login
 - user Logout
+- User reporting
+- User inactive mode
+- User settings model
 
 ## Upcoming features
 We plan on adding more user functionalities as:
-- User inactive model
-- User settings model
-- User reporting
 - HTML templating email verification
-
+- Improve admin panel
