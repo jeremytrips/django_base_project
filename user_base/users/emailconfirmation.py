@@ -19,9 +19,11 @@ def _send_confirmation_email(user, token):
         fail_silently=False
     )
 
-def verify_email(user_mail, furnished_token):
-    user = get_user_model().objects.get(email=user_mail)
-    user_token = EmailVerificationToken.objects.get(user_owner=user)
+def verify_email(user, furnished_token):
+    try:
+        user_token = EmailVerificationToken.objects.get(user_owner=user)
+    except EmailVerificationToken.DoesNotExist:
+        return None, False
     if user_token.token == furnished_token:
         user_token.delete()
         return user, True

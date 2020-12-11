@@ -1,3 +1,5 @@
+from django.contrib.auth import get_user_model
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
@@ -6,6 +8,8 @@ from users.emailconfirmation import verify_email
 from users.api.serializers.validationtokenserializer import ValidationTokenSerializer
 from users.permissions import IsActive, IsAccountVisible
 from rest_framework.permissions import AllowAny
+
+User = get_user_model()
 
 class VerifyToken(APIView):
     """
@@ -16,10 +20,14 @@ class VerifyToken(APIView):
     def post(self, request):
         ser = ValidationTokenSerializer(data=request.data)
         if ser.is_valid():
-            user, res = verify_email(ser.validated_data['user_email'], ser.validated_data['token'])
-            if res:
+            try:
+                user = User.objects.get(email=ser.validated_data['user_email'])
+            except:
+                return Response("DO_NOT_EXIST", status=HTTP_400_BAD_REQUEST)
+            user, res = verify_email(user, ser.validated_data['token'])
+            if res: 
                 user.settings.is_email_verified = True
-                user.save()
+                user.settings.save()
                 return Response(status=HTTP_200_OK)
             else:
                 return Response(data=["TOKEN_ERROR"], status=HTTP_400_BAD_REQUEST)

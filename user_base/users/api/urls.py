@@ -21,11 +21,13 @@ from .views.authentication import LoginVIew, LogoutView
 from .views.registrationview import RegistrationView
 from .views.deleteacountview import DeleteAccount
 from .views.verifytoken import VerifyToken
+from .views.reportuser import ReportUser
 
 urlpatterns = [
     path('create/', RegistrationView.as_view(), name='create'),
     path('delete/', DeleteAccount.as_view(), name='delete'),
     path('login/', LoginVIew.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
-    path('verifytoken/', VerifyToken.as_view(), name='verify_token')
+    path('verifytoken/', VerifyToken.as_view(), name='verify_token'),
+    path('report/', ReportUser.as_view(), name='report')
 ]
