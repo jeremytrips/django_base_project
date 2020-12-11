@@ -20,6 +20,7 @@ from users.models import Settings, EmailVerificationToken
 from users.api.serializers.RegistrationSerializer import RegistrationSerializer
 from users.api.serializers.LoginSerializer import LoginSerializer
 from users.api.views.authentication import LoginVIew
+from users.api.serializers.userreportserializer import UserReportSerializer
 from test_data import serializer_create_correct_data, serializer_create_different_password_data
 
 
@@ -385,7 +386,160 @@ class UserReportTest(TestCase):
             "token": token.token
         })
 
+    def login(self, user_email):
+        resp = self.client.post(reverse("login"), data={
+            "email": user_email,
+            "password": self.password
+        })
+        return resp.data["token"]
+
     def create_and_verify(self, user_email):
         self.createUser(user_email)
         self.verify_email(user_email)
         return User.objects.get(email=user_email)
+
+    def create_and_verify_and_login(self, user_email):
+        self.createUser(user_email)
+        self.verify_email(user_email)
+        user = User.objects.get(email=user_email)
+        token = self.login(user_email)
+        return user, token
+
+    def test_report_user_serializer(self):
+        """
+        Test user serializer 
+        """
+        email1 = "orange@ciseau.be"
+        email2 = "pierre@lune.be"
+        user1, token = self.create_and_verify_and_login(email1)
+        user2 = self.create_and_verify(email2)
+        data ={
+            "reason": "On est pas sorti du sable",
+            "reported_user": 2
+        }
+        ser = UserReportSerializer(data=data)
+        self.assertTrue(ser.is_valid())
+        self.assertIn("reason", list(ser.validated_data))
+        self.assertIn("reported_user", list(ser.validated_data))
+
+    def test_report_user_serializer_with_error(self):
+        """
+        Test multiple user serializer errors
+        """
+        data = {
+            "reson": "Allez vous couchez!",
+            "reported_user": 1
+        }
+        ser = UserReportSerializer(data=data)
+        self.assertFalse(ser.is_valid())
+        self.assertIn("reason", ser.errors.keys())
+        data = {
+            "reason": "Allez vous couchez!",
+            "reportsed_user": 1
+        }
+        ser = UserReportSerializer(data=data)
+        self.assertFalse(ser.is_valid())
+        self.assertIn("reported_user", ser.errors.keys())
+        data = {
+            "reason": "Allez vous couchez!",
+            "reported_user": "Voucou"
+        }
+        ser = UserReportSerializer(data=data)
+        self.assertFalse(ser.is_valid())
+        self.assertEqual(ser.errors["reported_user"][0], "A valid integer is required.")
+
+    def test_user_report_view(self):
+        """
+        Test user report view
+        """
+        email1 = "orange@ciseau.be"
+        email2 = "pierre@lune.be"
+        user1, token = self.create_and_verify_and_login(email1)
+        user2 = self.create_and_verify(email2)
+        resp = self.client.post(reverse("report"),
+            data={
+                "reason": "Moi, à une époque, je voulais faire vœu de pauvreté mais avec le pognon que j'rentrais, j'arrivais pas à concilier les deux.",
+                "reported_user": 2
+            },
+            HTTP_AUTHORIZATION=f'Token {token}'
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+    
+    def test_user_report_view_invalide_serializer(self):
+        """
+        test report view with invalid serializer
+        """
+        email1 = "orange@ciseau.be"
+        email2 = "pierre@lune.be"
+        user1, token = self.create_and_verify_and_login(email1)
+        user2 = self.create_and_verify(email2)
+        resp = self.client.post(reverse("report"),
+            data={
+                "reason": "Moi, à une époque, je voulais faire vœu de pauvreté mais avec le pognon que j'rentrais, j'arrivais pas à concilier les deux.",
+                "reported_us": 2
+            },
+            HTTP_AUTHORIZATION=f'Token {token}'
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        
+    def test_user_report_view_report_user_does_not_exist(self):
+        """
+        test report view when supplied user id does not exist
+        """
+        email1 = "orange@ciseau.be"
+        user1, token = self.create_and_verify_and_login(email1)
+        resp = self.client.post(reverse("report"),
+            data={
+                "reason": "Moi, à une époque, je voulais faire vœu de pauvreté mais avec le pognon que j'rentrais, j'arrivais pas à concilier les deux.",
+                "reported_user": 2
+            },
+            HTTP_AUTHORIZATION=f'Token {token}'
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(resp.data, ["REPORTED_USER_DOES_NOT_EXIST"])
+        
+    def test_report_with_not_email_verified(self):
+        """
+        Test report view when supplied user id is not email verified
+        """
+        email1 = "jai@tropdexam.com"
+        email2 = "peutetre@tropdeprojet.be"
+        user1, token = self.create_and_verify_and_login(email1)
+        self.createUser(email2)
+        resp = self.client.post(reverse("report"),
+            data={
+                "reason": "faut pas respirer la compote ça fait tousser",
+                "reported_user": 2
+            },
+            HTTP_AUTHORIZATION=f'Token {token}'
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(resp.data, ["REPORTED_USER_NOT_EMAIL_VERIFIED"])
+
+    def test_report_user_while_not_authenticated(self):
+        email1 = "jemappelle@henry.ru"
+        email2 = "bebettethanru@truestory.com"
+        self.createUser(email1)
+        self.create_and_verify(email2)
+        resp = self.client.post(reverse("report"),
+            data={
+                "reason": "faut pas respirer la compote ça fait tousser",
+                "reported_user": 2
+            }
+        )
+        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn("detail", resp.data.keys())
+        self.assertEqual("Authentication credentials were not provided.", resp.data["detail"])
+
+    def test_self_report_view(self):
+        email1 = "jenaimare@defairedestest.com"
+        user, token = self.create_and_verify_and_login(email1)
+        resp = self.client.post(reverse("report"),
+            data={
+                "reason": "faut pas respirer la compote ça fait tousser",
+                "reported_user": 1
+            },
+            HTTP_AUTHORIZATION=f'Token {token}'
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(resp.data, ["SELF_REPORT_NOT_ALLOWED"])
