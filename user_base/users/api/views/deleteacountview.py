@@ -13,6 +13,8 @@ class DeleteAccount(APIView):
         Manage the user deletion.
     """
 
+    permission_classes = [IsEmailVerfied, IsAccountVisible, ]
+
     def post(self, request):
         user = request.user
         user.is_active = False
