@@ -25,7 +25,7 @@ class ReportUser(APIView):
                 return Response(data=["REPORTED_USER_DOES_NOT_EXIST"], status=HTTP_400_BAD_REQUEST)
             if not user_reported.settings.is_email_verified:
                 return Response(data=["REPORTED_USER_NOT_EMAIL_VERIFIED"], status=HTTP_400_BAD_REQUEST)
-              if user_reported == request.user:
+            if user_reported == request.user:
                 return Response(data=["SELF_REPORT_NOT_ALLOWED"], status=HTTP_400_BAD_REQUEST)
             report = ReportedUser.objects.create(
                 user_report_description=ser.validated_data["reason"]

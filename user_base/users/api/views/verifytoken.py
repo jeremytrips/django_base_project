@@ -6,7 +6,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from users.emailconfirmation import verify_email
 from users.api.serializers.validationtokenserializer import ValidationTokenSerializer
-from users.permissions import IsActive, IsAccountVisible
+from users.permissions import IsActive
 from rest_framework.permissions import AllowAny
 
 User = get_user_model()
@@ -22,8 +22,8 @@ class VerifyToken(APIView):
         if ser.is_valid():
             try:
                 user = User.objects.get(email=ser.validated_data['user_email'])
-            except:
-                return Response("DO_NOT_EXIST", status=HTTP_400_BAD_REQUEST)
+            except User.DoesNotExist:
+                return Response(["DO_NOT_EXIST"], status=HTTP_400_BAD_REQUEST)
             user, res = verify_email(user, ser.validated_data['token'])
             if res: 
                 user.settings.is_email_verified = True
