@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'users',
-
 ]
 
 MIDDLEWARE = [
@@ -133,7 +132,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES':(
                 'rest_framework.permissions.IsAuthenticated',
                 'users.permissions.IsEmailVerfied',
-                'users.permissions.IsAccountVisible',
                 'users.permissions.IsActive',
     ),
 
