@@ -17,13 +17,13 @@ class Settings(models.Model):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)                                                  # Adresse mail pour contacter et se connecter
-    noma = models.CharField(max_length=10)                              # Numero de matricule de l etudiant(e)
-    student_card = models.ImageField(upload_to="image/student_card/")                        # Carte etudiant pour verif mail/noma/nom et validite du compte
-    first_name = models.CharField(max_length=20,)                              # prenom de l etudiant(e)
-    last_name = models.CharField(max_length=20,)                          # nom de l etudiant(e)
-    studies = models.CharField(max_length=30,)                      # etudes de l etudiant(e)
-    home_address = models.CharField(max_length=30,)                    # lieu de residence hors campus
-    birth_date = models.DateTimeField(auto_now=True, blank=True)                                  # date de naissance de l etudiant(e)
+    noma = models.CharField(max_length=10)                                                  # Numero de matricule de l etudiant(e)
+    student_card = models.ImageField(upload_to="image/student_card/")                       # Carte etudiant pour verif mail/noma/nom et validite du compte
+    first_name = models.CharField(max_length=20,)                                           # prenom de l etudiant(e)
+    last_name = models.CharField(max_length=20,)                                            # nom de l etudiant(e)
+    studies = models.CharField(max_length=30,)                                              # etudes de l etudiant(e)
+    home_address = models.CharField(max_length=30,)                                         # lieu de residence hors campus
+    birth_date = models.DateTimeField(auto_now=True, blank=True)                            # date de naissance de l etudiant(e)
     description = models.CharField(max_length=250, blank=True)                              # description visible pour les autres utilisateurs
     age_lower_bound = models.PositiveSmallIntegerField(default=16)                          # limite inf d age pour partenaire
     age_upper_bound = models.PositiveSmallIntegerField(default=100)                         # limite sup d age pour partenaire

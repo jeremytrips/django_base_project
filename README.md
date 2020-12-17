@@ -1,8 +1,8 @@
 # Base Project for Django
 
-Django project that can be use to start a rest api based project. Each functionalities that have been implemented are so using dajngo-rest-framework.
+Django project that can be used to start a rest api based project. Each functionalities that have been implemented are using the django-rest-framework.
 
-The project create a custom user model and have the basics of user managment. 
+The project create a custom user model and has the basics of user managment. 
 
 ## Installation
 There is no real installation needed as you should just download the repo and start working.
@@ -32,9 +32,9 @@ Settings represent the user settings:
 
 Field can surely be added in the user/models.py file
 
-As the authentication parameters have changed we have implemented new permissions:
-- IsEmailVerified: Check wether the user have verified his email
-- IsAccouneVisible: Check whether the user is in ghost mode. You may want to disbale some functionalities for those users.
+As the authentication parameters have changed we implemented new permissions:
+- IsEmailVerified: Check whether the user has verified his email
+- IsAccountVisible: Check whether the user is in ghost mode. You may want to disable some functionalities for those users.
 - IsActive: That boolean is set to false when user decide to delete his account.
 
 By default, for more security, the permission classes are:
@@ -44,8 +44,8 @@ By default, for more security, the permission classes are:
 - IsActive
 You can always add or disable some in the settings.py file.
  
-As we have said before every functionalities has been implemented in a FESTful architecture. 
-For now user functionalities are:
+As we have said before, every functionalities has been implemented in a RESTful architecture. 
+For now, user functionalities are:
 - User registration
 - User email verification
 - User deleting
