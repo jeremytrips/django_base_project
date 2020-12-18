@@ -2,7 +2,19 @@
 Django project that can be use to start a rest api based project. Each functionalities that have been implemented are so using dajngo-rest-framework.
 The project create a custom user model and have the basics of user managment.
 ## Installation
-There is no real installation needed as you should just download the repo and start working.
+Just download the repo and start working. 
+You should consider to use a virtual environnement, below you just have a to open a command prompt (cmd) in the repo's folder.
+```
+py -m venv venvName
+venvName\Scripts\activate
+pip install -r req.txt
+cd user_base
+py manage.py makemigrations
+py manage.py migrate
+py manage.py runserver
+```
+To check if the installation went well, go in your navigator at the following URL : http://127.0.0.1:8000/api/user/create/
+
 ## Usage
 
 We suppose that you've some basic django and django rest-framework knowledge to use that projet. It's aim is just to save your time.
