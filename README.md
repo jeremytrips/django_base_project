@@ -8,10 +8,10 @@ There is no real installation needed as you should just download the repo and st
 We suppose that you've some basic django and django rest-framework knowledge to use that projet. It's aim is just to save your time.
 
 ## Permission
-As the authentication parameters have changed we have implemented new permissions:
+As the authentication parameters has changed we have implemented new permissions:
 
-- IsEmailVerified: Check wether the user have verified his email
-- IsAccouneVisible: Check whether the user is in ghost mode. You may want to disbale some functionalities for those users.
+- IsEmailVerified: Check whether the user have verified his email
+- IsAccountVisible: Check whether the user is in ghost mode. You may want to disbale some functionalities for those users.
 - IsActive: That boolean is set to false when user decide to delete his account.
  
 By default, for more security, the permission classes are:
@@ -117,7 +117,7 @@ url: ```api/user/login/```
 |HTTP_200_OK|Authentication token| User is logged in.
 
 ### Logout
-View used to login viewer
+View used to logout viewer
 1. Requiered field in header: 
  - None
 2. Permissions needed
