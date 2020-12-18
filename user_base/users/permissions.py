@@ -16,8 +16,8 @@ class IsAccountVisible(BasePermission):
         """
         return request.user.settings.account_is_visible
 
+
 class IsActive(BasePermission):
-    
     def has_permission(self, request, view):
         """
             Check that the user isactive boolean is true. That boolean is set to false if uesr delete his account.        
