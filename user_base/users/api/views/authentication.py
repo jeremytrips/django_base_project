@@ -29,19 +29,19 @@ class LoginVIew(ObtainAuthToken):
                 return Response(data=["REGISTER_FIRST"], status=HTTP_401_UNAUTHORIZED)
             if not user.settings.is_email_verified:
                 # User emil must be verified before he can connect
-                return Response(data=["VERIFY_EMAIL_FIRST"], HTTP_401_UNAUTHORIZED)
+                return Response(data=["VERIFY_EMAIL_FIRST"], status=HTTP_401_UNAUTHORIZED)
             token, created = Token.objects.get_or_create(user=user)
             if user.is_active:
                 # User can connect the API
                 # todo get user list and pass it in the response
                 return Response(data={
                     "token": token.key
-                }, HTTP_200_OK)
+                }, status=HTTP_200_OK)
             else:
                 # User has disable his account
-                return Response(data=["USER_INACTIVE"], HTTP_401_UNAUTHORIZED)
+                return Response(data=["USER_INACTIVE"], status=HTTP_401_UNAUTHORIZED)
         else:
-            return Response(serializer.errors, HTTP_206_PARTIAL_CONTENT)
+            return Response(data=serializer.errors, status=HTTP_206_PARTIAL_CONTENT)
 
 
 class LogoutView(APIView):
