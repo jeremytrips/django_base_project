@@ -132,6 +132,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES':(
                 'rest_framework.permissions.IsAuthenticated',
                 'users.permissions.IsEmailVerfied',
+                'users.permissions.IsAccountVisible',
                 'users.permissions.IsActive',
     ),
 

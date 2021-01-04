@@ -21,7 +21,7 @@ from users.api.serializers.RegistrationSerializer import RegistrationSerializer
 from users.api.serializers.LoginSerializer import LoginSerializer
 from users.api.views.authentication import LoginVIew
 from users.api.serializers.userreportserializer import UserReportSerializer
-from test_data import serializer_create_correct_data, serializer_create_different_password_data, serializer_create_weak_password_data
+from test_data import serializer_create_correct_data, serializer_create_different_password_data
 
 
 # todo
@@ -46,22 +46,13 @@ Things already tested:
 
 User = get_user_model()
 
-class RegisterTest(TestCase):
-    password = "czgv5fv4r51g1vr"
 
-    def create_user(self, email):
-        data = {
-            "email": email,
-            "password": self.password,
-            "password2": self.password,
-            "home_address": "Zaventem",
-            "studies": "Ingé de ouf",
-            "first_name": "jeremy",
-            "last_name": "Trips",
-            "noma": "14122",
-            "student_card": File(open(os.path.join("static", "no_img.png"), "rb"))
-        }
-        return self.client.post(reverse("create"), data=data)
+class UserAuthenticationView(TestCase):
+
+    def setUp(self):
+        user = User.objects.create(email='login@user.com', password='fezruighfrjeg5', settings=Settings.objects.create())
+        user.settings.is_email_verified = True
+        user.save()
 
     def test_correct_register_serializer(self):
         """
@@ -76,6 +67,23 @@ class RegisterTest(TestCase):
             self.assertEqual(user, user2)
         else:
             raise Exception("Data 'serializer_create_correct_data' should be correct at this point and serializer should be valid.")
+
+        
+    def test_different_password_serializer(self):
+        """
+        Test different password in serializer
+        """
+        ser = RegistrationSerializer(data=serializer_create_different_password_data)
+        if ser.is_valid():
+            self.assertRaises(serializers.ValidationError, ser.save)
+    
+    def test_weak_password_serializer(self):
+        """
+        Test weak password in serializer
+        """
+        ser = RegistrationSerializer(data=serializer_create_different_password_data)
+        if ser.is_valid():
+            self.assertRaises(serializers.ValidationError, ser.save)
 
     def test_register_view(self):
         """
@@ -100,8 +108,20 @@ class RegisterTest(TestCase):
         """
         Test the basics registration workflow plus another user trying to registrate with same credentials.
         """
-        self.create_user("test@me.com")
-        resp = self.create_user("test@me.com")
+        self.test_register_view()
+        data = {
+            "email": "jeremy.trips@tamere.com",
+            "password": "pdcdezgf4545freff",
+            "password2": "pdcdezgf4545freff",
+            "home_address": "Zaventem",
+            "studies": "Ingé de ouf",
+            "first_name": "jeremy",
+            "last_name": "Trips",
+            "noma": "14122",
+            "student_card": File(open(os.path.join("static", "no_img.png"), "rb"))
+        }
+        data_second_user = data
+        resp = self.client.post(reverse("create"), data=data_second_user)
         self.assertEqual(resp.data["email"][0], "custom user with this email already exists.")    
         self.assertEqual(resp.data["email"][0].code, "unique")
         self.assertEqual(resp.status_code, 206)
@@ -115,37 +135,24 @@ class RegisterTest(TestCase):
             "password": "pdcdezgf4545freff",
             "password2": "pdcdezgf4545freff",
             "home_address": "Zaventem",
-            # "first_name": "jeremy",
-            "last_name": "Trips"
+            #"studies": "Ingé de ouf",
+            "first_name": "jeremy",
+            "last_name": "Trips",
+            "noma": "14122",
+            "student_card": File(open(os.path.join("static", "no_img.png"), "rb"))
         }
         resp = self.client.post(reverse("create"), data=data)
         self.assertEqual(resp.status_code, 206)
-        self.assertIn("first_name", resp.data.keys())
+        self.assertIn("studies", resp.data.keys())
 
-    def test_different_password_serializer(self):
+    def test_not_email_verified_login_view(self):
         """
-        Test different password in serializer
+        Test user want to connect without having verified his email.
         """
-        ser = RegistrationSerializer(data=serializer_create_different_password_data)
-        if ser.is_valid():
-            self.assertRaises(serializers.ValidationError, ser.save)
-    
-    def test_weak_password_serializer(self):
-        """
-        Test weak password in serializer
-        """
-        ser = RegistrationSerializer(data=serializer_create_weak_password_data)
-        if ser.is_valid():
-            self.assertRaises(serializers.ValidationError, ser.save)
-
-class AuthenticationTest(TestCase):
-    password = "dezuhfjrckpegftro"
-
-    def create_user(self, email):
         data = {
-            "email": email,
-            "password": self.password,
-            "password2": self.password,
+            "email": "jeremy.trips@tamere.com",
+            "password": "pdcdezgf4545freff",
+            "password2": "pdcdezgf4545freff",
             "home_address": "Zaventem",
             "studies": "Ingé de ouf",
             "first_name": "jeremy",
@@ -153,14 +160,8 @@ class AuthenticationTest(TestCase):
             "noma": "14122",
             "student_card": File(open(os.path.join("static", "no_img.png"), "rb"))
         }
-        return self.client.post(reverse("create"), data=data)
-
-    def test_not_email_verified_login_view(self):
-        """
-        Test user want to connect without having verified his email.
-        """
-        self.create_user("oui@encore.com")
-        resp = self.client.post(reverse("login"), data={"email": "oui@encore.com", "password": self.password})
+        self.client.post(reverse("create"), data=data)
+        resp = self.client.post(reverse("login"), data={"email": "jeremy.trips@tamere.com", "password": 'pdcdezgf4545freff'})
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(resp.data, "VERIFY_EMAIL_FIRST")
     
@@ -168,17 +169,27 @@ class AuthenticationTest(TestCase):
         """
         Test basic login workflow
         """
-        email = "jaiplusaucune@inspi.com"
-        self.create_user(email)
-        user = User.objects.get(email=email)
+        data = {
+            "email": "jeremy.trips@tamere.com",
+            "password": "pdcdezgf4545freff",
+            "password2": "pdcdezgf4545freff",
+            "home_address": "Zaventem",
+            "studies": "Ingé de ouf",
+            "first_name": "jeremy",
+            "last_name": "Trips",
+            "noma": "14122",
+            "student_card": File(open(os.path.join("static", "no_img.png"), "rb"))
+        }
+        self.client.post(reverse("create"), data=data)
+        user = User.objects.get(email="jeremy.trips@tamere.com")
         user.settings.is_email_verified = True
         user.settings.save()
         user.save()
-        resp = self.client.post(reverse("login"), data={"email": email, "password": self.password})
+        resp = self.client.post(reverse("login"), data={"email": "jeremy.trips@tamere.com", "password": 'pdcdezgf4545freff'})
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(len(resp.data['token']), 40)
         self.assertEqual(resp.data['token'], Token.objects.get(user=user).key)
-
+    
     def test_login_unknown_view(self):
         """
         Test basic workflow with unknown credential
@@ -186,34 +197,34 @@ class AuthenticationTest(TestCase):
         resp = self.client.post(reverse("login"), data={"email": "none@tamere.com", "password": 'pdcdezgf4545freff'})
         self.assertEqual(resp.status_code, 204)
         self.assertEqual(resp.data, "REGISTER_FIRST")
-    
+
     def test_delete_user(self):
-        email = "plusque@qqes.un"
-        self.create_user(email)
-        user = User.objects.get(email=email)
+        data = {
+            "email": "jeremy.trips@tamere.com",
+            "password": "pdcdezgf4545freff",
+            "password2": "pdcdezgf4545freff",
+            "home_address": "Zaventem",
+            "studies": "Ingé de ouf",
+            "first_name": "jeremy",
+            "last_name": "Trips",
+            "noma": "14122",
+            "student_card": File(open(os.path.join("static", "no_img.png"), "rb"))
+        }
+        resp = self.client.post(reverse("create"), data=data)
+        user = User.objects.get(email="jeremy.trips@tamere.com")
         email_token = EmailVerificationToken.objects.get(user_owner=user)
         self.client.post(reverse("verify_token"), data={
             "user_email": user.email,
             "token": email_token.token
         })
         resp = self.client.post(reverse("login"), data={
-            "email": email,
-            "password": self.password
+            "email": "jeremy.trips@tamere.com",
+            "password": "pdcdezgf4545freff"
         })
         token = resp.data["token"]
         resp = self.client.post(reverse("delete"), HTTP_AUTHORIZATION=f'Token {token}')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(resp.data, ["DELETED"])
-    
-
-
-class UserAuthenticationView(TestCase):
-    password = "dezuhfjrckpegftro"
-
-    def setUp(self):
-        user = User.objects.create(email='login@user.com', password='fezruighfrjeg5', settings=Settings.objects.create())
-        user.settings.is_email_verified = True
-        user.save()
  
     def test_create_user(self):
         """

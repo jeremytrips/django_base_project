@@ -16,7 +16,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = get_user_model()
-        exclude = ["is_admin", "is_staff", "is_active", "settings"]
+        fields = ['email', 'noma', 'student_card', 'studies', 'home_address', 'birth_date', 'description', 'profile_pic_one', 'profile_pic_two', 'profile_pic_three',  'first_name', 'last_name', 'password', 'password2']
 
     def create(self, validated_data):
         """

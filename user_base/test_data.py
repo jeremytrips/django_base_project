@@ -32,7 +32,7 @@ serializer_create_different_password_data = {
     "student_card": file2
 }
 
-serializer_create_weak_password_data = {
+serializer_create_different_password_data = {
     "email": "jeremy.trips@tamere.com",
     "password": "pdf",
     "password2": "pdf",
