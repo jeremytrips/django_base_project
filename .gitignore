@@ -1,6 +1,5 @@
 /venv/
 image/
-/static/
 migrations/
 __pycache__/
 .idea/
