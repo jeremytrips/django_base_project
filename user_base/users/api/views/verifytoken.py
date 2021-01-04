@@ -23,7 +23,7 @@ class VerifyToken(APIView):
             try:
                 user = User.objects.get(email=ser.validated_data['user_email'])
             except User.DoesNotExist:
-                return Response(["DO_NOT_EXIST"], status=HTTP_400_BAD_REQUEST)
+                return Response(data=["DO_NOT_EXIST"], status=HTTP_400_BAD_REQUEST)
             user, res = verify_email(user, ser.validated_data['token'])
             if res: 
                 user.settings.is_email_verified = True
