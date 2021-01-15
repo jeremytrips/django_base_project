@@ -162,8 +162,8 @@ class UserAuthenticationView(TestCase):
         }
         self.client.post(reverse("create"), data=data)
         resp = self.client.post(reverse("login"), data={"email": "jeremy.trips@tamere.com", "password": 'pdcdezgf4545freff'})
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(resp.data, "VERIFY_EMAIL_FIRST")
+        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(resp.data, ["VERIFY_EMAIL_FIRST"])
     
     def test_login_view(self):
         """
@@ -195,8 +195,8 @@ class UserAuthenticationView(TestCase):
         Test basic workflow with unknown credential
         """
         resp = self.client.post(reverse("login"), data={"email": "none@tamere.com", "password": 'pdcdezgf4545freff'})
-        self.assertEqual(resp.status_code, 204)
-        self.assertEqual(resp.data, "REGISTER_FIRST")
+        self.assertEqual(resp.status_code, 401)
+        self.assertEqual(resp.data, ["REGISTER_FIRST"])
 
     def test_delete_user(self):
         data = {
@@ -334,7 +334,7 @@ class MailTest(TestCase):
             "token": "256"
         })
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(resp.data, "DO_NOT_EXIST")
+        self.assertEqual(resp.data, ["DO_NOT_EXIST"])
 
     def test_already_verified(self):
         """
